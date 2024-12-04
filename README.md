@@ -131,11 +131,16 @@ After applying A/B Testing, Shapiro Test rejected H0 for normality assumption. T
 Briefly, moving first gate from level 30 to level 40 creates no significant difference between control and test groups.
 It means player retention is not affected at all, and we can not enhance player retention with this level change.
 
-1-day and 7-day average retention are higher when the gate is at level 30 than when it is at level 40.
 
 ```python
 ab.groupby("version").retention_1.mean(), ab.groupby("version").retention_7.mean()
 ```
+![image](https://github.com/user-attachments/assets/2322c757-7229-422e-a60a-057ae122cf07)
+
+1-day and 7-day average retention are a bit higher when the gate is at level 30 than when it is at level 40.
+
+Consequently, even if there is a slight difference numericly, the gate can be remained at level 30.
+
 
 
 
