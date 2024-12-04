@@ -35,19 +35,18 @@ df.groupby("version").sum_gamerounds.agg(["count", "median", "mean", "std", "max
 ![image](https://github.com/user-attachments/assets/6a3999a5-8094-4f5c-9207-5988a6a95e98)
 
 ## Outliers
-We can see the outlier for the control group(gate_30) in the graph below:
-According to this graph, we can state that there is only one outlier,
+The outlier for the control group(gate_30) can be seen in the graph below:
 
 ![image](https://github.com/user-attachments/assets/527ee7c9-1edd-45ec-8247-ac505d750c8b)
 
-In the standard IQR method, the %25-%75 quartiles are typically used. However, based on the visual inspection of the outliers, we can adjust the range to be broader by using IQR with %1-%99 percentiles. This approach allows us to accommodate a wider range of data points.
+In the standard IQR method, the %25-%75 quartiles are typically used. However, based on the visual inspection of the outliers, I adjusted the range to be broader by using IQR with %1-%99 percentiles. This approach allows to accommodate a wider range of data points.
 After removing outliers, distribution of sum_gamerounds is shown as follows:
 
 ![image](https://github.com/user-attachments/assets/7e18a235-268c-4d43-8278-1fad52b0c4f1)
 
 ## Important Statistics
 
-As we can see, 50% of players played less than 16 rounds during the first week, and 75% of players played less than 51 rounds.
+As you can see, 50% of players played less than 16 rounds during the first week, and 75% of players played less than 51 rounds.
 
 ![image](https://github.com/user-attachments/assets/854c5da5-8116-4a01-bf12-8c5b45cda3be)
 
@@ -57,26 +56,87 @@ Additionaly, number of players decrease as the levels progress.
 
 ![image](https://github.com/user-attachments/assets/4939f1c0-81aa-4d39-a5c7-82d41785551e)
 
-Looking at the summary statistics, the control(gate_30) and test groups(gate_40) seem similar, but we need to investigate if these groups are statistically significant. 
+Looking at the summary statistics, the control(gate_30) and test groups(gate_40) seem similar, but it should be investigated if these groups are statistically significant. 
 
 ![image](https://github.com/user-attachments/assets/a9a5a9d2-6f66-4986-892a-380121f95388)     
 
-
-Retention variables gives us player retention details. %55 percent of the players didn't play the game 1 day after installing, while %81 percent of the players didn't play the game 7 day after installing.
+Retention variables show player retention details. %55 percent of the players didn't play the game 1 day after installing, while %81 percent of the players didn't play the game 7 day after installing.
 
 ![image](https://github.com/user-attachments/assets/23a74bb2-714c-4482-95f0-6890738a2780)
 
-Looking at the summary statistics of retention variables(after 1 day and 7 days) by version and comparing with sum_gamerounds, there are similarities between groups. However, we still need to see if there is a statistically significant difference.
+Looking at the summary statistics of retention variables(after 1 day and 7 days) by version and comparing with sum_gamerounds, it can be seen there are similarities between groups. However, it still should be considered if there is a statistically significant difference.
 
 ![image](https://github.com/user-attachments/assets/31b929af-d441-491a-9611-a81ca3bcb16e)  ![image](https://github.com/user-attachments/assets/7109f5f4-9390-407f-9da7-e2a1d8770b93)
 
+I created a new "Retention" variable to show active players, who played the game after 1 day and 7 days.
+It shows that 14% of the total players are active players.
+Again, control and test groups seems similar in case of player retention. As the final step, I performed an A/B test if these groups are statistically significant.
 
+```python
+df["Retention"] = np.where((df.retention_1 == True) & (df.retention_7 == True), 1,0)
+df.groupby(["version", "Retention"])["sum_gamerounds"].agg(["count", "median", "mean", "std", "max"])
+```
 
+![image](https://github.com/user-attachments/assets/52ade668-ea83-46f3-8491-ae90a34cbe80)
 
+## A/B Testing
 
+### Procedure:
+- Apply Shapiro Test for normality
+- If parametric apply Levene Test for homogeneity of variances
+- If Parametric + homogeneity of variances apply T-Test
+- If Parametric - homogeneity of variances apply Welch Test
+- If Non-parametric apply Mann Whitney U Test directly
 
+1)Create hypothesis - H0: A = B (There is no significant difference between groups)
 
+2)Check hypothesis
+- Normal distribution
+- Homogeneity of variance
+
+```python
+test_stat, p_value = shapiro(group_A)
+print("Test Stat = %.4f, p-value = %.4f" %(test_stat,p_value))
+```
+Test Stat = 0.5104, p-value = 0.0000
+```python
+test_stat, p_value = shapiro(group_B)
+print("Test Stat = %.4f, p-value = %.4f" %(test_stat,p_value))
+```
+Test Stat = 0.5044, p-value = 0.0000
+
+3)Apply hypothesis
+As p-value < 0.05 for both groups, **normal distribution** is **rejected**. Mann Whitney U Test can be applied directly:
+
+```python
+test_stat, p_value = mannwhitneyu(group_A,group_B)
+print("Test Stat = %.4f, p-value = %.4f" %(test_stat,p_value))
+```
+
+Test Stat = 1024331275.0000, p-value = 0.0502
+
+4)Evaluate results with p-value
+As p-value > 0.05, it is concluded that hypothesis is accepted and there is no significant difference between A/B groups. 
    
+# Conclusion
+
+As players progress through the game they will encounter gates that force them to wait some time before they can progress or make an in-app purchase. In this project, we analyzed the result of an A/B test where the first gate in Cookie Cats was moved from level 30 to level 40. In particular, we analyzed the impact on player retention and game rounds.
+
+Firstly, we investigated relationships and structures in the data. There was no missing value but there was an outlier problem in the data. Summary stats and plots assisted to understand the data and problem.
+
+Before A/B Testing, we shared some details and statistics about game, players and problems.
+
+After applying A/B Testing, Shapiro Test rejected H0 for normality assumption. Therefore we needed to apply a Non-parametric Mann Whitney U Test to compare two groups. As a result, H0 hypothesis is accepted which means A/B groups are statistically significant.
+
+Briefly, moving first gate from level 30 to level 40 creates no significant difference between control and test groups.
+It means player retention is not affected at all, and we can not enhance player retention with this level change.
+
+1-day and 7-day average retention are higher when the gate is at level 30 than when it is at level 40.
+
+```python
+ab.groupby("version").retention_1.mean(), ab.groupby("version").retention_7.mean()
+```
+
 
 
 
