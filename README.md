@@ -139,7 +139,7 @@ ab.groupby("version").retention_1.mean(), ab.groupby("version").retention_7.mean
 
 1-day and 7-day average retention are a bit higher when the gate is at level 30 than when it is at level 40.
 
-Consequently, even if there is a slight difference numericly, the gate can be remained at level 30.
+Consequently, even if there is a slight numerical difference , the gate can be remained at level 30.
 
 
 
