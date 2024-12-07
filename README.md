@@ -141,6 +141,9 @@ ab.groupby("version").retention_1.mean(), ab.groupby("version").retention_7.mean
 
 Consequently, even if there is a slight numerical difference , the gate can be remained at level 30.
 
+NOTE: When the sample size is very large, relying solely on the p-value for decision-making can be misleading. A small p-value may indicate statistical significance, but it could stem from minimal differences between groups that have little practical or business relevance. Therefore, it is crucial to also consider the effect size when interpreting results.
+
+For instance, a p-value of 0.0502 is on the threshold of statistical significance. Interpreting such results requires caution, and it may be beneficial to conduct further analyses or collect additional data to validate the findings and ensure more robust conclusions.
 
 
 
